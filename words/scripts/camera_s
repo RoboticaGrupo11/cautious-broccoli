@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+
+import rospy
+import cv2
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+import rospkg
+
+
+# parameters
+
+start_point = (150, 150)
+end_point =(500,300)
+color = (0, 0,0 )
+thickness = 2
+
+# video capture and global variables
+camera_1 = 0
+camera_2 = 2
+camera_3 = 3
+
+cap = cv2.VideoCapture(camera_1)
+cap2 = cv2.VideoCapture(camera_2)
+cap3 = cv2.VideoCapture(camera_3)
+
+print(cap.isOpened())
+print(camera_1)
+print(cap2.isOpened())
+print(camera_2)
+
+
+bridge = CvBridge()
+bridge2 = CvBridge()
+
+#cap.set(3,ancho)
+#cap.set(4,alto)
+
+# class building 
+class talker: 
+    pub = rospy.Publisher('/webcam',Image, queue_size=1)
+    pub2 = rospy.Publisher('/movil',Image, queue_size=1)
+    rospy.init_node('image', anonymous=True)
+    rospy.Rate(10)
+    while not rospy.is_shutdown(): 
+        ret, frame = cap.read()
+        ret2, frame2 = cap2.read()
+        if ret == False: 
+            break
+        
+        msg = bridge.cv2_to_imgmsg(frame,"bgr8")
+        msg2 = bridge2.cv2_to_imgmsg(frame2,"bgr8")
+        
+        pub.publish(msg)
+        pub2.publish(msg2)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        if rospy.is_shutdown():
+            cap.release()
+# init code 
+if __name__ == '__main__':
+    try: 
+        lett = talker() 
+    except rospy.ROSInterruptException:
+       pass
